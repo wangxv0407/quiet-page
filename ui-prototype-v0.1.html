@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>桌面阅读工作台 · UI 原型 v0.1</title>
+<style>
+:root{
+  --paper:#F7F5F0; --paper:oklch(96.6% 0.008 78);
+  --paper-2:#FFFFFB; --paper-2:oklch(98.6% 0.006 80);
+  --ink:#2B2925; --ink:oklch(23% 0.008 70);
+  --ink-2:#6E6A61; --ink-2:oklch(50% 0.008 75);
+  --ink-3:#8A857B; --ink-3:oklch(60% 0.008 75);
+  --line:#DFDBD1; --line:oklch(89% 0.007 80);
+  --line-soft:#EAE7DF; --line-soft:oklch(93% 0.006 80);
+  --cinnabar:#A44B32; --cinnabar:oklch(50% 0.115 32);
+  --cinnabar-soft:#F0E2DC; --cinnabar-soft:oklch(91% 0.025 35);
+  --desk:#D9D7D0; --desk:oklch(87% 0.006 80);
+  --desk-block:#CBC8BF; --desk-block:oklch(83% 0.006 80);
+  --ok:#4A7053; --ok:oklch(48% 0.06 145);
+  --warn:#8E6620; --warn:oklch(52% 0.08 80);
+  --shadow-rgb:38,34,28;
+  --font-ui:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+  --font-read:"Songti SC","Noto Serif CJK SC","Source Han Serif SC","SimSun",Georgia,serif;
+  --font-mono:ui-monospace,"SFMono-Regular",Consolas,monospace;
+  --r-sm:6px; --r-md:10px; --r-lg:14px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px;
+  --rhythm:32px;
+  --ease:cubic-bezier(.22,.7,.25,1);
+  --t-fast:150ms var(--ease); --t-normal:260ms var(--ease);
+}
+[data-theme="night"]{
+  --paper:#1F1E1B; --paper:oklch(19% 0.008 75);
+  --paper-2:#262520; --paper-2:oklch(22% 0.008 75);
+  --ink:#EDE9E0; --ink:oklch(94% 0.008 80);
+  --ink-2:#B3AEA2; --ink-2:oklch(75% 0.008 80);
+  --ink-3:#8B877C; --ink-3:oklch(62% 0.008 80);
+  --line:#3B3933; --line:oklch(31% 0.008 75);
+  --line-soft:#302E29; --line-soft:oklch(27% 0.008 75);
+  --cinnabar:#D68D70; --cinnabar:oklch(71% 0.10 40);
+  --cinnabar-soft:#3A2B25; --cinnabar-soft:oklch(26% 0.025 40);
+  --desk:#141311; --desk:oklch(13% 0.006 75);
+  --desk-block:#232220; --desk-block:oklch(19% 0.006 75);
+  --ok:#8DB79A; --ok:oklch(72% 0.06 145);
+  --warn:#D2A961; --warn:oklch(74% 0.08 80);
+  --shadow-rgb:0,0,0;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--desk); color:var(--ink); font-family:var(--font-ui);
+  font-size:16px; -webkit-font-smoothing:antialiased; font-kerning:normal;
+  display:flex; align-items:center; justify-content:center;
+  padding:clamp(16px,3.5vw,52px); transition:background var(--t-normal);
+}
+button,input{font:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--cinnabar); outline-offset:2px}
+.page{width:min(1120px,100%)}
+.page-head{display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:18px; flex-wrap:wrap}
+.page-head h1{margin:0; font-size:15px; font-weight:500; letter-spacing:.02em}
+.page-head p{margin:6px 0 0; font-size:12.5px; color:var(--ink-2); line-height:1.6}
+.page-head .tag{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-3); border:1px solid var(--line); padding:4px 9px; border-radius:999px; white-space:nowrap}
+.stage{
+  position:relative; min-height:660px; border:1px solid var(--line); border-radius:18px;
+  background:var(--desk); overflow:hidden; display:flex; align-items:center; justify-content:center;
+  padding:clamp(18px,3vw,44px); transition:background var(--t-normal);
+}
+.desk-block{position:absolute; background:var(--desk-block); border-radius:9px; opacity:.8}
+.desk-block.a{width:36%; height:44%; left:2.5%; top:7%}
+.desk-block.b{width:29%; height:31%; right:3%; bottom:6%}
+.desk-block.c{width:22%; height:16%; left:8%; bottom:7%; opacity:.55}
+.desk-rule{position:absolute; height:7px; border-radius:4px; background:var(--desk); opacity:.85}
+.desk-note{position:absolute; left:18px; top:14px; font-size:11.5px; color:var(--ink-3); letter-spacing:.02em}
+.window{
+  position:relative; width:min(980px,100%); height:590px; border-radius:var(--r-lg);
+  overflow:hidden; z-index:2; transition:opacity 220ms var(--ease), transform 220ms var(--ease);
+  box-shadow:0 24px 64px rgba(var(--shadow-rgb),var(--shadow-a,.16)), 0 1px 2px rgba(var(--shadow-rgb),.06);
+}
+.window.is-stowed{opacity:0; transform:scale(.985) translateY(8px); pointer-events:none}
+.window__surface{
+  position:absolute; inset:0; background:var(--paper); border:1px solid var(--line);
+  border-radius:var(--r-lg); opacity:var(--alpha,1);
+  transition:opacity 180ms var(--ease), background var(--t-normal);
+}
+.window__inner{position:relative; z-index:1; height:100%; display:flex; flex-direction:column}
+.titlebar{height:48px; flex:none; display:flex; align-items:center; gap:10px; padding:0 10px 0 14px; border-bottom:1px solid var(--line-soft)}
+.brand{width:26px; height:26px; border-radius:5px; background:var(--ink); color:var(--paper); display:grid; place-items:center; font-family:var(--font-read); font-size:14px; flex:none}
+.titlebar__name{font-size:12.5px; color:var(--ink-2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px}
+.titlebar__spacer{flex:1}
+.sep{width:1px; height:18px; background:var(--line); margin:0 2px; flex:none}
+.tool{
+  appearance:none; border:0; background:transparent; color:var(--ink-2); font-size:12.5px;
+  height:36px; min-width:44px; padding:0 10px; border-radius:var(--r-sm);
+  transition:background var(--t-fast), color var(--t-fast); white-space:nowrap;
+}
+.tool:hover{background:var(--line-soft); color:var(--ink)}
+.tool[aria-pressed="true"]{background:var(--cinnabar-soft); color:var(--cinnabar)}
+.tool--accent{color:var(--cinnabar)}
+.notice{
+  display:none; padding:9px 16px; font-size:12.5px; color:var(--warn);
+  background:var(--paper-2); border-bottom:1px solid var(--line-soft); align-items:center; gap:10px;
+}
+.notice.is-on{display:flex}
+.notice button{border:0; background:none; color:var(--cinnabar); font-size:12.5px; padding:0}
+.main{flex:1; display:flex; min-height:0}
+.sidebar{
+  width:246px; flex:none; border-right:1px solid var(--line-soft); display:flex; flex-direction:column;
+  gap:14px; padding:16px 12px 12px; overflow:hidden;
+  transition:width var(--t-normal), opacity 180ms var(--ease), padding var(--t-normal);
+}
+.window.is-minimal .sidebar{width:0; padding-left:0; padding-right:0; opacity:0; border-right:0}
+.search{height:36px; border:1px solid var(--line); border-radius:8px; background:var(--paper-2); display:flex; align-items:center; gap:8px; padding:0 10px; color:var(--ink-3); font-size:12.5px; flex:none}
+.shelf{flex:1; overflow-y:auto; min-height:0}
+.group{margin-bottom:18px}
+.group__head{display:flex; align-items:center; justify-content:space-between; padding:0 6px 8px; font-size:11.5px; color:var(--ink-3); letter-spacing:.06em}
+.badge{font-size:10.5px; color:var(--ok); border:1px solid var(--line); border-radius:999px; padding:2px 7px; letter-spacing:0}
+.book{display:flex; align-items:center; gap:10px; min-height:54px; padding:7px 8px; border-radius:8px; border:0; background:none; width:100%; text-align:left; color:var(--ink); transition:background var(--t-fast)}
+.book:hover{background:var(--line-soft)}
+.book[aria-current="true"]{background:var(--cinnabar-soft)}
+.cover{width:30px; height:40px; border-radius:3px; background:var(--line); color:var(--ink-2); display:grid; place-items:center; font-family:var(--font-read); font-size:13px; flex:none; border:1px solid var(--line)}
+.book[aria-current="true"] .cover{background:var(--paper-2); color:var(--cinnabar)}
+.book__meta{flex:1; min-width:0}
+.book__title{font-size:13px; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.book__sub{font-size:11.5px; color:var(--ink-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ring{width:22px; height:22px; flex:none}
+.group.is-off{opacity:.42; pointer-events:none}
+.import{width:100%; height:38px; border:1px dashed var(--line); border-radius:8px; background:none; color:var(--ink-2); font-size:12.5px; flex:none; transition:border-color var(--t-fast), color var(--t-fast)}
+.import:hover{border-color:var(--cinnabar); color:var(--cinnabar)}
+.conn{display:flex; align-items:center; gap:7px; padding:0 6px; font-size:11.5px; color:var(--ink-2); flex:none}
+.dot{width:6px; height:6px; border-radius:50%; background:var(--ok); flex:none}
+.conn.is-warn .dot{background:var(--warn)}
+.empty{display:none; padding:24px 10px; text-align:center; color:var(--ink-3); font-size:12.5px; line-height:1.8}
+.empty.is-on{display:block}
+.reader{flex:1; min-width:0; display:flex; flex-direction:column; overflow-y:auto; padding:clamp(24px,3.2vw,44px) clamp(28px,5vw,72px) 18px}
+.chapter{font-size:11.5px; color:var(--ink-3); letter-spacing:.1em; margin-bottom:var(--s4)}
+.reader h2{font-family:var(--font-read); font-weight:500; font-size:22px; line-height:1.45; margin:0 0 var(--rhythm); letter-spacing:.02em}
+.prose{font-family:var(--font-read); font-size:17px; line-height:1.9; max-width:34em; color:var(--ink)}
+.prose p{margin:0 0 var(--rhythm)}
+.prose .lead::first-letter{font-size:1.9em; line-height:1; float:left; margin:6px 8px 0 0; color:var(--cinnabar); font-weight:500}
+.reader__foot{margin-top:auto; padding-top:14px; border-top:1px solid var(--line-soft); display:flex; align-items:center; gap:12px; font-size:11.5px; color:var(--ink-3); font-variant-numeric:tabular-nums}
+.track{height:2px; flex:1; background:var(--line); border-radius:2px; overflow:hidden}
+.fill{height:100%; background:var(--cinnabar); width:42%; transition:width var(--t-normal)}
+.stealth{
+  position:absolute; right:16px; bottom:58px; width:272px; z-index:5; padding:16px;
+  background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-md);
+  box-shadow:0 10px 28px rgba(var(--shadow-rgb),.13); display:none;
+}
+.stealth.is-open{display:block}
+.stealth__head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px}
+.stealth__head strong{font-size:13px; font-weight:500}
+.x{border:0; background:none; color:var(--ink-3); font-size:16px; line-height:1; padding:2px 4px}
+.row{display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:44px; font-size:12.5px; color:var(--ink-2)}
+.row label{color:var(--ink)}
+.switch{width:38px; height:22px; border-radius:999px; border:1px solid var(--line); background:var(--line-soft); position:relative; padding:0; flex:none; transition:background var(--t-fast)}
+.switch::after{content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--paper-2); box-shadow:0 1px 2px rgba(0,0,0,.18); transition:transform var(--t-fast)}
+.switch[aria-checked="true"]{background:var(--cinnabar); border-color:var(--cinnabar)}
+.switch[aria-checked="true"]::after{transform:translateX(16px)}
+.slider{width:100%; accent-color:var(--cinnabar); margin:2px 0 6px}
+.alpha-val{font-family:var(--font-mono); font-size:12px; color:var(--cinnabar)}
+kbd{font-family:var(--font-mono); font-size:11.5px; border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; padding:2px 6px; color:var(--ink)}
+.hint{font-size:11px; color:var(--ink-3); line-height:1.7; border-top:1px solid var(--line-soft); padding-top:10px; margin-top:6px}
+.restore{position:absolute; inset:0; z-index:3; display:none; align-items:center; justify-content:center}
+body.is-stowed .restore{display:flex}
+.restore__pill{border:1px solid var(--line); background:var(--paper-2); color:var(--ink-2); border-radius:999px; padding:11px 20px; font-size:12.5px; box-shadow:0 6px 18px rgba(var(--shadow-rgb),.1)}
+.restore__pill kbd{margin:0 3px}
+.spec{
+  position:absolute; top:0; right:0; bottom:0; width:min(410px,88%); z-index:9; overflow-y:auto;
+  background:var(--paper-2); border-left:1px solid var(--line); padding:24px 22px 32px;
+  transform:translateX(101%); transition:transform var(--t-normal);
+}
+.spec.is-open{transform:translateX(0)}
+.spec h3{font-size:13px; font-weight:500; margin:0 0 10px}
+.spec h4{font-size:11.5px; font-weight:500; color:var(--ink-3); letter-spacing:.08em; margin:22px 0 8px}
+.spec p,.spec li{font-size:12px; color:var(--ink-2); line-height:1.8; margin:0 0 8px}
+.spec ul{padding-left:16px; margin:0}
+.spec table{width:100%; border-collapse:collapse; font-size:11.5px; margin-bottom:8px}
+.spec td,.spec th{text-align:left; padding:5px 6px; border-bottom:1px solid var(--line-soft); color:var(--ink-2); vertical-align:top}
+.spec th{color:var(--ink-3); font-weight:400}
+.spec code{font-family:var(--font-mono); font-size:11px; color:var(--cinnabar)}
+.state-btns{display:flex; gap:6px; flex-wrap:wrap}
+.state-btns button{border:1px solid var(--line); background:none; color:var(--ink-2); border-radius:6px; padding:6px 10px; font-size:11.5px; min-height:34px}
+.state-btns button[aria-pressed="true"]{border-color:var(--cinnabar); color:var(--cinnabar); background:var(--cinnabar-soft)}
+.spec__close{position:absolute; right:16px; top:16px; border:0; background:none; color:var(--ink-3); font-size:16px}
+.status{position:absolute; left:16px; bottom:16px; z-index:6; font-size:11.5px; color:var(--ink-3); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:5px 11px; opacity:0; transition:opacity 180ms}
+.status.is-on{opacity:1}
+@media (max-width:880px){
+  .sidebar{width:196px}
+  .reader{padding:24px 30px 16px}
+  .window{height:550px}
+  .stage{min-height:600px}
+}
+@media (max-width:620px){
+  .sidebar{display:none}
+  .titlebar__name{display:none}
+  .stage{min-height:520px; padding:14px}
+  .window{height:480px}
+  .spec{width:94%}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important; animation-duration:.01ms!important}}
+</style>
+</head>
+<body data-theme="paper">
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>桌面阅读工作台 · UI 原型 v0.1</h1>
+      <p>纸墨编辑风 / 分层透明度 / 低调阅读层 L1+L2 —— 这一半只做核心阅读界面与设计系统基础</p>
+    </div>
+    <span class="tag">方案 A · 可交互预览</span>
+  </div>
+
+  <div class="stage">
+    <div class="desk-block a"></div><div class="desk-block b"></div><div class="desk-block c"></div>
+    <div class="desk-rule" style="left:6%;top:14%;width:26%"></div>
+    <div class="desk-rule" style="left:6%;top:20%;width:20%"></div>
+    <div class="desk-rule" style="left:6%;top:26%;width:28%"></div>
+    <div class="desk-rule" style="right:6%;bottom:16%;width:22%"></div>
+    <div class="desk-rule" style="right:6%;bottom:11%;width:17%"></div>
+    <span class="desk-note">参照底图 · 仅用于观察透明度，非产品功能</span>
+
+    <div class="restore" aria-hidden="true">
+      <div class="restore__pill">已收起 · 按 <kbd>Alt</kbd> + <kbd>\</kbd> 恢复，阅读位置保留 · <button class="x" id="restoreBtn" style="font-size:12.5px;color:var(--cinnabar)">立即恢复</button></div>
+    </div>
+
+    <div class="window" id="win">
+      <div class="window__surface" id="surface"></div>
+      <div class="window__inner">
+        <div class="titlebar">
+          <span class="brand" aria-hidden="true">阅</span>
+          <span class="titlebar__name" id="barName">山与海之间</span>
+          <span class="titlebar__spacer"></span>
+          <button class="tool" id="themeBtn" aria-pressed="false" title="切换纸墨 / 夜读">纸墨</button>
+          <button class="tool" id="minimalBtn" aria-pressed="false" title="极简模式">极简</button>
+          <button class="tool" id="stealthBtn" aria-pressed="false" aria-expanded="false" title="低调阅读设置">低调</button>
+          <span class="sep"></span>
+          <button class="tool" id="specBtn" aria-expanded="false" title="设计规范速览">规范</button>
+          <button class="tool tool--accent" id="stowBtn" title="一键收起 Alt + \">收起</button>
+        </div>
+
+        <div class="notice" id="notice">
+          <span>微信读书数据暂不可用，已切换到纯本地模式。本地书籍与阅读不受影响。</span>
+          <button id="reconnectBtn">重新连接</button>
+        </div>
+
+        <div class="main">
+          <aside class="sidebar" aria-label="书架">
+            <div class="search"><span aria-hidden="true">⌕</span> 找一本书</div>
+            <div class="shelf" id="shelf"></div>
+            <div class="empty" id="empty">书架空着。<br>先导入一本本地书，或连接微信读书。</div>
+            <button class="import" id="importBtn">＋ 导入本地书籍</button>
+            <div class="conn" id="conn"><span class="dot"></span><span id="connText">微信读书 · 只读已连接</span></div>
+          </aside>
+
+          <main class="reader" id="reader">
+            <div class="chapter" id="chapter">第三章 · 潮汐表</div>
+            <h2 id="bookTitle">山与海之间</h2>
+            <div class="prose" id="prose"></div>
+            <div class="reader__foot">
+              <span id="progressText">已读 42%</span>
+              <span class="track"><span class="fill" id="fill"></span></span>
+              <span id="etaText">约 12 分钟</span>
+            </div>
+          </main>
+        </div>
+
+        <div class="stealth" id="stealth" role="group" aria-label="低调阅读设置">
+          <div class="stealth__head"><strong>低调阅读</strong><button class="x" id="stealthClose" aria-label="关闭">×</button></div>
+          <div class="row"><label for="alpha">窗口背景透明度</label><span class="alpha-val" id="alphaVal">100%</span></div>
+          <input class="slider" id="alpha" type="range" min="45" max="100" value="100" step="5" aria-describedby="alphaHint">
+          <div class="row"><label id="lblMinimal">极简模式</label><button class="switch" id="swMinimal" role="switch" aria-checked="false" aria-labelledby="lblMinimal"></button></div>
+          <div class="row"><label id="lblPin">窗口置顶</label><button class="switch" id="swPin" role="switch" aria-checked="true" aria-labelledby="lblPin"></button></div>
+          <div class="row"><span>一键收起 / 恢复</span><span><kbd>Alt</kbd> + <kbd>\</kbd></span></div>
+          <p class="hint" id="alphaHint">背景层可调透明，文字层始终全不透明 —— 整窗透明度会同步压低正文对比度，破坏可读性。切换与收起均不丢阅读位置。</p>
+        </div>
+
+        <div class="spec" id="spec" aria-label="设计规范速览">
+          <button class="spec__close" id="specClose" aria-label="关闭">×</button>
+          <h3>设计规范速览</h3>
+          <p>纸墨编辑风 · 克制 / 安静 / 书卷气。界面外壳尽量消失，一处朱砂，其余中性。</p>
+
+          <h4>状态演示</h4>
+          <div class="state-btns" id="stateBtns">
+            <button data-state="ok" aria-pressed="true">正常</button>
+            <button data-state="local" aria-pressed="false">Key 失效 · 纯本地</button>
+            <button data-state="empty" aria-pressed="false">空书架</button>
+          </div>
+          <p>三种状态对应 R-16 降级、空状态引导与 R-01 只读连接态。</p>
+
+          <h4>色彩 token</h4>
+          <table>
+            <tr><th>角色</th><th>纸墨 / 夜读</th><th>用途</th></tr>
+            <tr><td><code>--paper</code></td><td>oklch(96.6% .008 78) / (19% .008 75)</td><td>窗口底</td></tr>
+            <tr><td><code>--ink</code></td><td>oklch(23% .008 70) / (94% .008 80)</td><td>正文</td></tr>
+            <tr><td><code>--cinnabar</code></td><td>oklch(50% .115 32) / (71% .10 40)</td><td>进度 · 当前项</td></tr>
+            <tr><td><code>--line</code></td><td>oklch(89% .007 80) / (31% .008 75)</td><td>分隔线</td></tr>
+          </table>
+          <p>暖色带微弱 chroma 的中性色，不用纯灰 / 纯黑 / 纯白；严格 60-30-10 视觉权重。</p>
+
+          <h4>排版与间距</h4>
+          <table>
+            <tr><th>项</th><th>规格</th></tr>
+            <tr><td>UI 字体</td><td>PingFang SC / Microsoft YaHei / Segoe UI</td></tr>
+            <tr><td>正文字体</td><td>Songti SC / Noto Serif CJK SC，17px</td></tr>
+            <tr><td>行高 / 节奏</td><td>1.9 ≈ 32px，段落间距 = 1 个节奏</td></tr>
+            <tr><td>行宽</td><td>≤ 34em，中文约 30 字 / 行</td></tr>
+            <tr><td>字号阶梯</td><td>11.5 / 12.5 / 13 / 17 / 22 px（5 级）</td></tr>
+            <tr><td>间距基准</td><td>4 / 8 / 12 / 16 / 24 / 32 px</td></tr>
+          </table>
+
+          <h4>组件与关键决策</h4>
+          <ul>
+            <li>窗口外壳（自绘标题条）、书架列表、阅读区、文字工具按钮、低调面板、状态徽标、恢复提示、规范抽屉。</li>
+            <li>分层透明度：透明度作用于背景层，不作用于文本层。</li>
+            <li>渐进披露：低调控件默认收起，主界面不出现「隐蔽」字面与视觉暗示。</li>
+            <li>不呈现：正版书正文、写操作、DRM 文件、L3 伪装能力。</li>
+            <li>WCAG AA：正文 ≥ 4.5:1，键盘全可达，focus-visible，respect reduced-motion。</li>
+          </ul>
+
+          <h4>这一半 / 下一半</h4>
+          <ul>
+            <li>已做：核心阅读界面、设计 tokens、组件基础、L1+L2 交互、三态演示。</li>
+            <li>待做：书架管理与筛选、导入流程与格式/DRM 提示、设置与 Key 连接页、笔记导出视图、空/错/加载全状态、深浅主题完整走查、交付标注与切图。</li>
+          </ul>
+        </div>
+
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const proseA = [
+  '午后三点，办公室的光线开始变得迟缓。屏幕上的字排成整齐的队列，像一列不急着到站的火车。我把注意力收回来，落在这一页上——阅读的好处大概就在这里：它不要求你立刻回应谁。',
+  '一本书被翻到中间的时候，最容易看出它的性情。前面是承诺，后面是结果，而中间是作者真正愿意陪你走的那段路。有些书在这里松了手，有些书反而握得更紧。',
+  '窗外有人经过，键盘声此起彼伏。我合上这一页，记住段落最后那个句号的位置。等会儿回来，它还会在原处等我。'
+];
+const proseB = [
+  '旧书店的钟总是慢五分钟。老板说这不是坏了，是给翻书的人留一点余地——你总得有时间从上一页里回过神来，才走得进下一页。',
+  '书架第三排靠窗的位置，阳光午后才会经过。那些被照过的书脊颜色淡一些，像被谁反复读过。我常想，书有没有记忆，大概就藏在这些褪色的地方。'
+];
+const books = [
+  { id:'w1', group:'weread', title:'山与海之间', author:'林见微', p:42, chapter:'第三章 · 潮汐表', paras:proseA },
+  { id:'w2', group:'weread', title:'旧书店手记', author:'周砚', p:68, chapter:'第七章 · 靠窗那一排', paras:proseB },
+  { id:'w3', group:'weread', title:'慢读集', author:'陈屿', p:7, chapter:'第一章 · 序', paras:proseA },
+  { id:'l1', group:'local', title:'窗边的注释', author:'本地文件 · EPUB', p:23, chapter:'第二章 · 留白', paras:proseB },
+  { id:'l2', group:'local', title:'夜航笔记', author:'本地文件 · TXT', p:0, chapter:'尚未开始', paras:proseA }
+];
+const state = { alpha:1, minimal:false, pinned:true, theme:'paper', conn:'ok', book:'w1', stowed:false };
+const win = $('#win'), shelf = $('#shelf'), spec = $('#spec'), stealth = $('#stealth');
+let statusTimer;
+
+function toast(msg){
+  const el = $('#status'); el.textContent = msg; el.classList.add('is-on');
+  clearTimeout(statusTimer); statusTimer = setTimeout(() => el.classList.remove('is-on'), 2200);
+}
+function ring(p){
+  const c = 2 * Math.PI * 9;
+  return '<svg class="ring" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="9" fill="none" stroke="var(--line)" stroke-width="2"/>' +
+    '<circle cx="12" cy="12" r="9" fill="none" stroke="var(--cinnabar)" stroke-width="2" stroke-linecap="round" ' +
+    'stroke-dasharray="' + c.toFixed(2) + '" stroke-dashoffset="' + (c * (1 - p/100)).toFixed(2) + '" ' +
+    'transform="rotate(-90 12 12)"/></svg>';
+}
+function renderShelf(){
+  const empty = state.conn === 'empty';
+  $('#empty').classList.toggle('is-on', empty);
+  shelf.style.display = empty ? 'none' : 'block';
+  if (empty) return;
+  const groups = [
+    { key:'weread', label:'微信读书 · 只读', badge:'云端' },
+    { key:'local', label:'本地书籍', badge:'本机' }
+  ];
+  shelf.innerHTML = groups.map(g => {
+    const off = state.conn === 'local' && g.key === 'weread' ? ' is-off' : '';
+    const items = books.filter(b => b.group === g.key).map(b =>
+      '<button class="book" data-id="' + b.id + '" aria-current="' + (state.book === b.id) + '">' +
+      '<span class="cover">' + b.title.charAt(0) + '</span>' +
+      '<span class="book__meta"><span class="book__title">' + b.title + '</span>' +
+      '<span class="book__sub">' + b.author + ' · ' + (b.p ? b.p + '%' : '未读') + '</span></span>' +
+      ring(b.p) + '</button>'
+    ).join('');
+    return '<section class="group' + off + '"><div class="group__head"><span>' + g.label + '</span><span class="badge">' + g.badge + '</span></div>' + items + '</section>';
+  }).join('');
+  shelf.querySelectorAll('.book').forEach(btn => btn.addEventListener('click', () => selectBook(btn.dataset.id)));
+}
+function selectBook(id){
+  if (state.conn === 'local' && books.find(b => b.id === id).group === 'weread') return;
+  state.book = id; renderReader(); renderShelf();
+  toast('已切换到《' + books.find(b => b.id === id).title + '》');
+}
+function renderReader(){
+  const b = books.find(x => x.id === state.book);
+  $('#barName').textContent = b.title;
+  $('#bookTitle').textContent = b.title;
+  $('#chapter').textContent = b.chapter;
+  $('#prose').innerHTML = b.paras.map((t, i) => '<p' + (i === 0 ? ' class="lead"' : '') + '>' + t + '</p>').join('');
+  $('#progressText').textContent = '已读 ' + b.p + '%';
+  $('#etaText').textContent = b.p ? '约 ' + Math.max(4, Math.round((100 - b.p) * 0.21)) + ' 分钟' : '尚未开始';
+  $('#fill').style.width = b.p + '%';
+}
+function setAlpha(v){
+  state.alpha = v / 100;
+  win.style.setProperty('--alpha', state.alpha);
+  win.style.setProperty('--shadow-a', (0.16 * state.alpha).toFixed(3));
+  $('#alphaVal').textContent = v + '%';
+}
+function setMinimal(on){
+  state.minimal = on;
+  win.classList.toggle('is-minimal', on);
+  $('#minimalBtn').setAttribute('aria-pressed', on);
+  $('#swMinimal').setAttribute('aria-checked', on);
+  toast(on ? '极简模式 · 只保留正文与进度' : '已退出极简模式');
+}
+function setTheme(t){
+  state.theme = t;
+  document.body.dataset.theme = t;
+  const btn = $('#themeBtn');
+  btn.textContent = t === 'night' ? '夜读' : '纸墨';
+  btn.setAttribute('aria-pressed', t === 'night');
+}
+function setConn(s){
+  state.conn = s;
+  $('#notice').classList.toggle('is-on', s === 'local');
+  $('#conn').classList.toggle('is-warn', s !== 'ok');
+  $('#connText').textContent = s === 'ok' ? '微信读书 · 只读已连接' : (s === 'local' ? '纯本地模式 · 云端未连接' : '未连接 · 书架为空');
+  if (s === 'local' && books.find(b => b.id === state.book).group === 'weread') state.book = 'l1';
+  document.querySelectorAll('#stateBtns button').forEach(b => b.setAttribute('aria-pressed', b.dataset.state === s));
+  renderShelf(); renderReader();
+  toast(s === 'ok' ? '已恢复只读连接' : (s === 'local' ? '已降级为纯本地模式' : '空状态演示'));
+}
+function toggleStow(force){
+  state.stowed = force === undefined ? !state.stowed : force;
+  win.classList.toggle('is-stowed', state.stowed);
+  document.body.classList.toggle('is-stowed', state.stowed);
+  $('.restore').setAttribute('aria-hidden', !state.stowed);
+  if (state.stowed) toast('已收起 · 阅读位置保留');
+  else toast('已恢复阅读');
+}
+function togglePanel(el, btn, open){
+  el.classList.toggle('is-open', open);
+  if (btn) { btn.setAttribute('aria-expanded', open); btn.setAttribute('aria-pressed', open); }
+}
+
+$('#themeBtn').addEventListener('click', () => setTheme(state.theme === 'paper' ? 'night' : 'paper'));
+$('#minimalBtn').addEventListener('click', () => setMinimal(!state.minimal));
+$('#swMinimal').addEventListener('click', () => setMinimal(!state.minimal));
+$('#swPin').addEventListener('click', e => {
+  state.pinned = !state.pinned;
+  e.currentTarget.setAttribute('aria-checked', state.pinned);
+  toast(state.pinned ? '窗口置顶已开启' : '窗口置顶已关闭');
+});
+$('#alpha').addEventListener('input', e => setAlpha(Number(e.target.value)));
+$('#stealthBtn').addEventListener('click', e => {
+  const open = !stealth.classList.contains('is-open');
+  togglePanel(stealth, e.currentTarget, open);
+  if (open) togglePanel(spec, $('#specBtn'), false);
+});
+$('#stealthClose').addEventListener('click', () => togglePanel(stealth, $('#stealthBtn'), false));
+$('#specBtn').addEventListener('click', e => {
+  const open = !spec.classList.contains('is-open');
+  togglePanel(spec, e.currentTarget, open);
+  if (open) togglePanel(stealth, $('#stealthBtn'), false);
+});
+$('#specClose').addEventListener('click', () => togglePanel(spec, $('#specBtn'), false));
+$('#stowBtn').addEventListener('click', () => toggleStow());
+$('#restoreBtn').addEventListener('click', () => toggleStow(false));
+$('#reconnectBtn').addEventListener('click', () => setConn('ok'));
+$('#importBtn').addEventListener('click', () => toast('导入流程在下一半 UI 设计中'));
+document.querySelectorAll('#stateBtns button').forEach(b => b.addEventListener('click', () => setConn(b.dataset.state)));
+document.addEventListener('keydown', e => {
+  if (e.altKey && e.key === '\\') { e.preventDefault(); toggleStow(); }
+  if (e.key === 'Escape') {
+    togglePanel(spec, $('#specBtn'), false);
+    togglePanel(stealth, $('#stealthBtn'), false);
+    if (state.stowed) toggleStow(false);
+  }
+});
+
+setTheme('paper'); setAlpha(100); renderShelf(); renderReader();
+</script>
+</body>
+</html>

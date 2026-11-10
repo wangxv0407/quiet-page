@@ -1,0 +1,25 @@
+{
+  "name": "quiet-page",
+  "productName": "静页",
+  "version": "0.1.0",
+  "private": true,
+  "description": "静页 · 桌面阅读工作台：微信读书官方只读数据视图 + 本地书籍阅读 + 低调阅读层",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "check": "node --check src/main/index.js && node --check src/main/window.js && node --check src/main/shortcuts.js && node --check src/main/store.js && node --check src/main/weread.js && node --check src/preload/index.js && node --check src/renderer/app.js",
+    "dist": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "io.quietpage.app",
+    "productName": "静页",
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

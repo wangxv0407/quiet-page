@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:;">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>静页</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="window" id="win">
+  <div class="window__surface" id="surface"></div>
+  <div class="window__inner">
+    <div class="titlebar">
+      <span class="brand" aria-hidden="true">阅</span>
+      <span class="titlebar__name" id="barName">静页</span>
+      <span class="spacer"></span>
+      <button class="tool" id="themeBtn" aria-pressed="false">纸墨</button>
+      <button class="tool" id="minimalBtn" aria-pressed="false">极简</button>
+      <button class="tool" id="stealthBtn" aria-expanded="false">低调</button>
+      <span class="sep"></span>
+      <button class="tool" id="officialBtn">官方网页版</button>
+      <button class="tool accent" id="stowBtn">收起</button>
+    </div>
+
+    <div class="notice" id="notice">
+      <span id="noticeText">微信读书未连接，已使用纯本地模式。</span>
+      <button id="syncBtn">重新同步</button>
+    </div>
+
+    <div class="main">
+      <aside class="sidebar" aria-label="书架">
+        <section class="group" id="groupCloud">
+          <div class="group__head"><span>微信读书 · 只读</span><span class="badge">云端</span></div>
+          <div id="cloudList"></div>
+        </section>
+        <section class="group" id="groupLocal">
+          <div class="group__head"><span>本地书籍</span><span class="badge">本机</span></div>
+          <div id="localList"></div>
+        </section>
+        <div class="empty" id="empty">书架空着。<br>先导入一本本地书，或连接微信读书。</div>
+        <button class="import" id="importBtn">＋ 导入本地书籍</button>
+        <div class="conn" id="conn"><span class="dot"></span><span id="connText">纯本地模式</span></div>
+      </aside>
+
+      <main class="reader" id="reader">
+        <div class="chapter" id="chapter">尚未打开书籍</div>
+        <h2 id="bookTitle">静页</h2>
+        <div class="prose" id="prose">
+          <p>把一本书放在静页，随手翻到上次读到的那一页。</p>
+          <p>导入本地书籍，或连接微信读书查看书架与阅读进度。</p>
+        </div>
+        <div class="reader__foot">
+          <span id="progressText">—</span>
+          <span class="track"><span class="fill" id="fill"></span></span>
+          <span id="etaText"></span>
+        </div>
+      </main>
+    </div>
+
+    <div class="stealth" id="stealth" role="group" aria-label="低调阅读设置">
+      <div class="stealth__head"><strong>低调阅读</strong><button class="x" id="stealthClose" aria-label="关闭">×</button></div>
+      <div class="row"><label for="alpha">窗口背景透明度</label><span class="val" id="alphaVal">100%</span></div>
+      <input class="slider" id="alpha" type="range" min="45" max="100" value="100" step="5">
+      <div class="row"><span>文字亮度</span><span class="val" id="crVal">5.61 : 1</span></div>
+      <div class="seg" id="segTone">
+        <button data-tone="#8C939B" aria-pressed="true">贴近注释</button>
+        <button data-tone="#A6ACB4" aria-pressed="false">标准</button>
+        <button data-tone="#BCBEC4" aria-pressed="false">清晰</button>
+      </div>
+      <div class="row"><label id="lblMinimal">极简模式</label><button class="switch" id="swMinimal" role="switch" aria-checked="false" aria-labelledby="lblMinimal"></button></div>
+      <div class="row"><label id="lblPin">窗口置顶</label><button class="switch" id="swPin" role="switch" aria-checked="true" aria-labelledby="lblPin"></button></div>
+      <p class="hint">背景层可变透明，文字层始终全不透明 —— 整窗透明度会压低正文对比度。所有切换都不丢阅读位置。</p>
+    </div>
+
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </div>
+</div>
+<div class="restore" id="restore">已收起 · 按热键或托盘菜单恢复，阅读位置保留</div>
+<script src="app.js"></script>
+</body>
+</html>
