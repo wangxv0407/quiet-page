@@ -6,9 +6,9 @@
   "description": "静页 · 桌面阅读工作台：微信读书官方只读数据视图 + 本地书籍阅读 + 低调阅读层",
   "main": "src/main/index.js",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron . --dev",
-    "check": "node --check src/main/index.js && node --check src/main/window.js && node --check src/main/shortcuts.js && node --check src/main/store.js && node --check src/main/weread.js && node --check src/preload/index.js && node --check src/renderer/app.js",
+    "start": "node scripts/start.js",
+    "dev": "node scripts/start.js --dev",
+    "check": "node --check scripts/start.js && node --check src/main/index.js && node --check src/main/window.js && node --check src/main/shortcuts.js && node --check src/main/store.js && node --check src/main/weread.js && node --check src/preload/index.js && node --check src/renderer/app.js",
     "dist": "electron-builder --win"
   },
   "devDependencies": {

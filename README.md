@@ -53,23 +53,30 @@ npm run dev          # 启动并打开 DevTools
 npm run dist         # 打 Windows 安装包（prod）
 ```
 
+`npm start` 实际走 `scripts/start.js`：它会清掉宿主 Electron 应用传下来的 `ELECTRON_RUN_AS_NODE`，否则在集成终端里 `electron.exe` 会退化成普通 Node，报 `app is undefined`。首次安装若只装了 JS 包而缺 `node_modules/electron/dist`，用 `ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ node node_modules/electron/install.js` 补装二进制。
+
 首次启动是空书架：点「导入本地书籍」选 TXT / EPUB；EPUB 解析在后续迭代接入（当前先落 TXT 文本读取与占位）。
 
 ### 微信读书接入（只读）
 
-官方 Agent Gateway 的接口地址、参数与 `skill_version` 以官方文档为准，本项目**不硬编码任何推测值**。通过环境变量配置，任一缺失即自动降级为纯本地模式（需求 R-16）：
+官方 Agent Gateway 的接口地址、参数与 `skill_version` 以官方文档为准，本项目**不硬编码任何推测值**。任一配置缺失即自动降级为纯本地模式（需求 R-16）。
+
+两种配置方式，任选其一：
 
 ```bash
-# .env.example 见仓库，或直接在启动前设置（不要写进仓库）
+# 方式一：复制 .env.example 为 .env 后填写，启动时由 src/main/weread.js 自动读取
 WEREAD_SHELF_URL=   # 官方书架接口完整地址
 WEREAD_API_KEY=     # 个人 API Key，wrk-...
+
+# 方式二：启动前用 shell 注入（显式注入优先于 .env，Git Bash 写法）
+WEREAD_SHELF_URL='...' WEREAD_API_KEY='wrk-...' npm start
 ```
 
-**API Key 不落盘、不进仓库、不写日志**；MVP 阶段只从环境变量读取，正式版应改用系统凭据库（Windows Credential Manager）并提供一键清除与重置引导。
+**API Key 不进仓库、不写日志**；MVP 阶段以本地 `.env` 明文存放（该文件已被 `.gitignore` 排除），正式版应改用系统凭据库（Windows Credential Manager）并提供一键清除与重置引导。
 
 ### 快捷键
 
-- 收起 / 恢复：默认依次尝试 `Alt+Backslash`、`Ctrl+Alt+H`，第一个注册成功的生效；都失败时用托盘菜单。原型设计的 `Alt+\` 需在 Electron accelerator 键名上实测后写进 `config.hotkey`。
+- 收起 / 恢复：默认 `Alt+\`（已在 Electron 45 / Windows 实测合法），被占用时回退 `Ctrl+Alt+H`；也可在 `config.hotkey` 自定义，都失败时用托盘菜单。`Alt+Backslash` / `Alt+Oem5` / `Alt+Grave` 不是合法 accelerator token，不要写。
 - `Esc`：关闭浮层面板。
 
 ## dev / prod 差异
@@ -77,7 +84,7 @@ WEREAD_API_KEY=     # 个人 API Key，wrk-...
 | 项 | dev | prod |
 |---|---|---|
 | DevTools | `--dev` 可开 | 关闭 |
-| 渲染进程权限 | `contextIsolation:true` / `nodeIntegration:false` / `sandbox:true` | 同左，额外加 CSP |
+| 渲染进程权限 | `contextIsolation:true` / `nodeIntegration:false` / `sandbox:true` | 同左；CSP 由 `index.html` 的 meta 统一提供，dev / prod 均有 |
 | 外部链接 | 主进程白名单校验，只允许 `weread.qq.com` | 同左 |
 | API Key | 环境变量 | 系统凭据库，不明文落盘 |
 | 打包 | 不打包 | `electron-builder` nsis，签名按需 |
@@ -89,29 +96,14 @@ WEREAD_API_KEY=     # 个人 API Key，wrk-...
 3. **热键冲突**：`Ctrl+Alt+H` 可能被 IDE 占用；注册失败已有回退，但正式版应提供设置页自定义与冲突提示。
 4. **单实例**：已加 `requestSingleInstanceLock`，避免多开导致热键重复注册。
 5. **账号安全**：官方对第三方客户端 / 插件有账号封禁警告，本项目只用官方只读接口 + 系统浏览器打开官方网页版，不碰登录态。
-6. **公司邮箱**：本机 git 身份是 `王旭 <ex_wangxu10@cnooc.com.cn>`，推公开仓库前建议改成 GitHub noreply 邮箱，见下方推送章节。
+6. **提交身份**：仓库级 git 邮箱已设为 `93819457+wangxv0407@users.noreply.github.com`，公开仓库不暴露公司邮箱。
 7. **DRM**：导入流程只接受无保护的自有文件；解析失败要明确提示，不要静默尝试解密。
 
-## 推送到 GitHub
+## 推送到 GitHub（已完成）
 
-本机已确认：`git 2.55`、`Node 22.22.2`、GitHub 可达（HTTP 200）、Git Credential Manager 可用；`gh` 未安装、无 SSH 公钥，因此走 **HTTPS + 凭据管理器**最省事。
+远程 `https://github.com/wangxv0407/quiet-page`，本地 `main` 已跟踪 `origin/main`。初始提交 `e2b6f07` 的作者邮箱为 GitHub noreply 邮箱，远程与本地 HEAD 是**同一个 commit**（不是内容近似的两份历史），后续可正常 fast-forward。
 
-```bash
-# 1) 建议先设置仓库级提交身份（避免公司邮箱出现在公开仓库）
-git config user.name  "你的 GitHub 用户名"
-git config user.email "你的ID@users.noreply.github.com"
-
-# 2) 提交
-git add .
-git commit -m "feat: 静页 QuietPage 初始骨架"
-
-# 3) 关联并推送（仓库 URL 由用户提供）
-git remote add origin https://github.com/wangxv0407/quiet-page.git
-git branch -M main
-git push -u origin main
-```
-
-推送时凭据管理器会弹 GitHub 登录；若不便交互，可改用 PAT 作为密码，或生成 SSH key 后换 SSH 地址。
+排障注记：本机 `github.com` 的 Git 协议端点被代理阻断（`CONNECT tunnel failed, response 502`），`git push` 不可用；`api.github.com` 可用，因此初始提交走 GitHub Git Data API 写入（blobs → trees → commits → PATCH `refs/heads/main`）。用 API 建 tree 时**必须**以 `git cat-file blob <sha>` 从对象库取字节，不能读工作区文件——本机 `core.autocrlf=true`，两者会因 CRLF/LF 差异产生不同 blob，进而导致远程与本地 commit SHA 不一致。
 
 ## 路线图
 
